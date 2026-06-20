@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Performance Analytics Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div>
+   <h1 class="logo">📊 PerformanceIQ</h1>
+   <p class="creator-name">Built by T.V. Rakshitha</p>
+</div>
+            <div class="nav-buttons">
+                <button id="darkModeBtn" class="btn-icon">🌙</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTAINER -->
+    <div class="container">
+        
+        <!-- LEFT SIDEBAR - FORM -->
+        <aside class="sidebar">
+            <div class="card form-card">
+                <h2>Add Student</h2>
+                
+                <form id="studentForm">
+                    <!-- Student Name -->
+                    <div class="form-group">
+                        <label for="studentName">Student Name</label>
+                        <input type="text" id="studentName" placeholder="John Doe" required>
+                    </div>
+
+                    <!-- Register Number -->
+                    <div class="form-group">
+                        <label for="regNumber">Register Number</label>
+                        <input type="text" id="regNumber" placeholder="21CS001" required>
+                    </div>
+
+                    <!-- Department -->
+                    <div class="form-group">
+                        <label for="department">Department</label>
+                        <select id="department" required>
+                            <option value="">Select Department</option>
+                            <option value="CSE">CSE</option>
+                            <option value="ECE">ECE</option>
+                            <option value="MECH">MECH</option>
+                            <option value="CIVIL">CIVIL</option>
+                            <option value="EEE">EEE</option>
+                        </select>
+                    </div>
+
+                    <!-- Current Semester -->
+                    <div class="form-group">
+                        <label for="semester">Current Semester</label>
+                        <select id="semester" required>
+                            <option value="">Select Semester</option>
+                            <option value="1">Semester 1</option>
+                            <option value="2">Semester 2</option>
+                            <option value="3">Semester 3</option>
+                            <option value="4">Semester 4</option>
+                            <option value="5">Semester 5</option>
+                            <option value="6">Semester 6</option>
+                            <option value="7">Semester 7</option>
+                            <option value="8">Semester 8</option>
+                        </select>
+                    </div>
+
+                    <!-- Subject Marks Entry -->
+                    <div class="form-group">
+                        <label>Add Subject Marks</label>
+                        <div class="marks-input-group">
+                            <input type="text" id="subjectName" placeholder="Subject Name" class="subject-input">
+                            <input type="number" id="subjectMarks" placeholder="Marks" min="0" max="10" step="0.1" class="marks-input">
+                            <button type="button" id="addSubjectBtn" class="btn-secondary">+</button>
+                        </div>
+                    </div>
+
+                    <!-- Subjects List -->
+                    <div id="subjectsList" class="subjects-list"></div>
+
+                    <!-- SGPA -->
+                    <div class="form-group">
+                        <label for="sgpa">SGPA (or auto-calculate)</label>
+                        <input type="number" id="sgpa" placeholder="Will auto-calculate" min="0" max="10" step="0.1" readonly style="background: #f0f0f0;">
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn-primary">Add Student</button>
+                </form>
+            </div>
+        </aside>
+
+        <!-- RIGHT CONTENT AREA -->
+        <main class="content">
+            
+            <!-- SEARCH & FILTER -->
+            <div class="search-section">
+                <input type="text" id="searchInput" placeholder="Search by Register Number..." class="search-bar">
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="improving">Improving</button>
+                    <button class="filter-btn" data-filter="declining">Declining</button>
+                </div>
+            </div>
+
+            <!-- SUMMARY CARDS -->
+            <div class="summary-cards">
+                <div class="card summary-card">
+                    <h3>Total Students</h3>
+                    <p class="big-number" id="totalStudents">0</p>
+                </div>
+                <div class="card summary-card">
+                    <h3>Class Average CGPA</h3>
+                    <p class="big-number" id="classAverage">0.0</p>
+                </div>
+                <div class="card summary-card">
+                    <h3>Highest CGPA</h3>
+                    <p class="big-number" id="highestCGPA">0.0</p>
+                </div>
+                <div class="card summary-card">
+                    <h3>At-Risk Students</h3>
+                    <p class="big-number alert" id="atRiskCount">0</p>
+                </div>
+            </div>
+
+            <!-- STUDENTS TABLE -->
+            <div class="card">
+                <h2>Student Records</h2>
+                <div class="table-container">
+                    <table id="studentsTable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Reg. No</th>
+                                <th>Department</th>
+                                <th>Current SGPA</th>
+                                <th>CGPA</th>
+                                <th>Trend</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- CHARTS SECTION -->
+            <div class="charts-section">
+                <!-- Performance Trend Chart -->
+                <div class="card chart-card">
+                    <h3>Class Performance Trend</h3>
+                    <canvas id="trendChart"></canvas>
+                </div>
+
+                <!-- Department Comparison -->
+                <div class="card chart-card">
+                    <h3>Department Average CGPA</h3>
+                    <canvas id="deptChart"></canvas>
+                </div>
+            </div>
+
+            <!-- INDIVIDUAL STUDENT DETAIL VIEW -->
+            <div id="studentDetailModal" class="modal hidden">
+                <div class="modal-content">
+                    <button class="close-btn">&times;</button>
+                    <div class="student-detail-header">
+                        <h2 id="detailStudentName"></h2>
+                        <p id="detailRegNumber"></p>
+                    </div>
+                    
+                    <div class="detail-cards">
+                        <div class="detail-card">
+                            <h4>Current SGPA</h4>
+                            <p id="detailCurrentSGPA">0.0</p>
+                        </div>
+                        <div class="detail-card">
+                            <h4>Current CGPA</h4>
+                            <p id="detailCurrentCGPA">0.0</p>
+                        </div>
+                        <div class="detail-card">
+                            <h4>Trend</h4>
+                            <p id="detailTrend">-</p>
+                        </div>
+                        <div class="detail-card">
+                            <h4>Consistency</h4>
+                            <p id="detailConsistency">0%</p>
+                        </div>
+                    </div>
+
+                    <!-- Subject Performance Heatmap -->
+                    <h4 style="margin-top: 20px;">Subject-wise Performance</h4>
+                    <div id="detailSubjectsGrid" class="subjects-grid"></div>
+
+                    <!-- Performance History -->
+                    <h4 style="margin-top: 20px;">Semester History</h4>
+                    <canvas id="studentDetailChart"></canvas>
+
+                    <!-- Motivational Message -->
+                    <div class="motivation-card" id="motivationCard">
+                        <h4>💡 Personalized Insight</h4>
+                        <p id="motivationText"></p>
+                    </div>
+
+                    <!-- Prediction -->
+                    <div class="prediction-card">
+                        <h4>📈 CGPA Projection</h4>
+                        <p id="predictionText"></p>
+                    </div>
+
+                    <!-- Delete Button -->
+                    <button id="deleteStudentBtn" class="btn-danger">Delete Student</button>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast" class="toast"></div>
+    <footer class="footer-banner">
+    <div class="footer-content">
+        <h2>Built by THAMMISETTY VENKATA RAKSHITHA</h2>
+        <p>📧 rakshithatammesetty2007@gmail.com</p>
+
+        <a href="https://digitalheroesco.com" target="_blank">
+            <button class="digital-btn">Built for Digital Heroes</button>
+        </a>
+    </div>
+</footer>
+   
+
+    <script src="script.js"></script>
+</body>
+</html>
